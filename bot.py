@@ -1,3 +1,49 @@
+#!/usr/bin/env python3
+import asyncio
+import json
+import os
+from aiogram import Bot, Dispatcher, F
+from aiogram.filters import Command
+from aiogram.types import (
+    Message, InlineKeyboardMarkup, InlineKeyboardButton, 
+    CallbackQuery
+)
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
+
+# ============ ОБХОД ДЛЯ RAILWAY ============
+# Это создаст заглушку веб-сервера, чтобы Railway не падал
+try:
+    from aiohttp import web
+    
+    async def handle(request):
+        return web.Response(text="Bot is running")
+    
+    async def start_web():
+        app = web.Application()
+        app.router.add_get("/", handle)
+        app.router.add_get("/health", handle)
+        runner = web.AppRunner(app)
+        await runner.setup()
+        port = int(os.environ.get("PORT", 8080))
+        site = web.TCPSite(runner, "0.0.0.0", port)
+        await site.start()
+        print(f"✅ Web server started on port {port}")
+    
+    loop = asyncio.get_event_loop()
+    loop.create_task(start_web())
+except ImportError:
+    print("❌ aiohttp not installed, continuing without web server")
+except Exception as e:
+    print(f"❌ Failed to start web server: {e}")
+# ============================================
+
+# ============ НАСТРОЙКИ ============
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+ADMIN_ID = int(os.environ.get("ADMIN_ID", 0))
+DATA_FILE = "/data/bot_data.json"
+# ===================================
+
 import asyncio
 import json
 import os
